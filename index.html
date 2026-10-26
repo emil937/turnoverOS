@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#f7f9fd" />
+<meta name="description" content="A responsive, single-file UI prototype for a Vacancy Turnover Management Platform." />
+<title>TurnoverOS — Vacancy Turnover Dashboard Preview</title>
+<style>
+  :root {
+    --ink:#1d2a42; --heading:#15243d; --muted:#8b96a9; --blue:#4868f0; --blue-dark:#3351d0;
+    --blue-soft:#eef2ff; --bg:#f6f8fc; --border:#e8edf5; --card:#fff; --green:#16866e;
+    --orange:#d98330; --shadow:0 14px 38px rgba(27,47,89,.045);
+    font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+    color:var(--ink); background:var(--bg); font-synthesis:none; -webkit-font-smoothing:antialiased;
+  }
+  * {box-sizing:border-box}
+  body {margin:0; min-width:320px}
+  button,input,select,textarea {font:inherit}
+  button {cursor:pointer}
+  button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible {outline:3px solid rgba(72,104,240,.27); outline-offset:2px}
+  svg.ico {width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .demo-toolbar {height:61px;background:white;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;position:relative;z-index:5}
+  .demo-brand {display:flex;align-items:center;gap:10px;font-size:13px;font-weight:750;color:#253551}
+  .demo-dot {height:9px;width:9px;border-radius:50%;background:#44b98b;box-shadow:0 0 0 5px #e8f8f1}
+  .demo-desc {font-size:12px;font-weight:450;color:var(--muted);padding-left:12px;border-left:1px solid #e7eaf0;margin-left:2px}
+  .demo-switch {background:#f3f5fa;border:1px solid #e8ecf2;border-radius:12px;padding:4px;display:flex;gap:4px}
+  .demo-switch button {border:0;background:transparent;color:#7b8599;border-radius:9px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:7px;padding:9px 14px}
+  .demo-switch button .ico {width:15px;height:15px}
+  .demo-switch button.active {background:white;color:var(--blue);box-shadow:0 2px 6px #1c295112}
+  .demo-note {font-size:11px;color:#99a2b2}
+  .preview-bg {background:#f6f8fc;min-height:calc(100vh - 61px);transition:background .25s ease;padding:0}
+  .preview-bg.mobile-mode {background:#e9edf6;padding:22px 16px 40px;display:flex;justify-content:center;align-items:flex-start}
+  .stage {width:100%;container-name:appstage;container-type:inline-size;position:relative;isolation:isolate;background:var(--bg)}
+  .stage.phone {max-width:406px;height:814px;min-height:0;border-radius:33px;border:7px solid #19243b;box-shadow:0 26px 85px #25325440,0 4px 20px #24365418;overflow:hidden}
+  .stage.phone:before {content:"";position:absolute;top:0;left:calc(50% - 46px);height:13px;width:92px;border-radius:0 0 12px 12px;background:#19243b;z-index:11;pointer-events:none}
+  .app {display:grid;grid-template-columns:244px minmax(0,1fr);min-height:calc(100vh - 61px)}
+  .sidebar {background:#13243f;color:#b7c2d9;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding:27px 15px 21px;display:flex;flex-direction:column;gap:0;position:sticky;top:0;height:calc(100vh - 61px);min-height:740px}
+  .sidebar::-webkit-scrollbar {display:none}
+  .brand {display:flex;gap:11px;align-items:center;padding:2px 13px 33px;color:white}
+  .brand-logo {width:37px;height:37px;border-radius:12px;background:linear-gradient(145deg,#7084ff,#395bdf);display:flex;align-items:center;justify-content:center;box-shadow:0 9px 20px #07193635}
+  .brand-logo .ico {width:22px;height:22px;stroke-width:2}
+  .brand-word {font-size:19px;font-weight:800;letter-spacing:-.75px;line-height:1}
+  .brand-sub {display:block;color:#7e92b4;font-size:10px;font-weight:600;letter-spacing:1.15px;margin-top:6px}
+  .side-caption {font-size:10px;color:#7185a8;font-weight:750;letter-spacing:1.6px;text-transform:uppercase;padding:0 14px;margin:5px 0 11px}
+  .sidebar-nav {display:flex;flex-direction:column;gap:4px}
+  .side-link {display:flex;align-items:center;gap:13px;width:100%;height:43px;padding:0 13px;border:0;border-radius:10px;background:transparent;color:#aebcd4;text-align:left;font-size:12.5px;font-weight:580;transition:.2s}
+  .side-link:hover {background:#203754;color:white}
+  .side-link.active {background:#2b4268;color:#fff;box-shadow:inset 3px 0 #7a91ff}
+  .side-link .ico {width:18px;height:18px;stroke-width:1.9}
+  .side-link span {flex:1}
+  .side-count {background:#4868f0;color:#fff;font-size:10px;padding:3px 7px;border-radius:6px;font-weight:800}
+  .side-sep {height:1px;background:#293d5c;margin:24px 15px 22px}
+  .sidebar-grow {flex:1}
+  .sidebar-help {margin:16px 3px 0;border:1px solid #34506e;border-radius:13px;background:linear-gradient(140deg,#243d61,#1a3150);padding:16px 14px}
+  .sidebar-help .help-orb {height:34px;width:34px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:#405e8b;color:#e2e9ff;margin-bottom:12px}
+  .sidebar-help strong {display:block;color:white;font-size:12px}
+  .sidebar-help p {margin:6px 0 11px;color:#9db1d0;font-size:11px;line-height:1.5}
+  .sidebar-help button {border:0;background:#f1f4ff;color:#24416c;padding:8px 11px;border-radius:8px;font-size:11px;font-weight:800}
+  .sidebar-version {font-size:10px;color:#61769c;margin:17px 13px 0}
+  .main-shell {min-width:0;min-height:100%;display:flex;flex-direction:column}
+  .topbar {height:76px;background:#fff;border-bottom:1px solid var(--border);padding:0 34px;display:flex;align-items:center;justify-content:space-between;gap:20px;position:relative;z-index:3}
+  .breadcrumb {display:flex;align-items:center;gap:10px;font-size:12px;color:#a6adba;white-space:nowrap}
+  .breadcrumb strong {color:#2e3a51;font-weight:750}
+  .breadcrumb .ico {height:16px;width:16px;color:#8a96aa}
+  .top-actions {display:flex;align-items:center;gap:16px}
+  .global-search {width:245px;height:39px;border:1px solid #e9edf5;border-radius:10px;background:#f8f9fc;display:flex;align-items:center;gap:9px;color:#96a0b1;padding:0 12px;font-size:12px;transition:.15s}
+  .global-search .ico {height:16px;width:16px}
+  .global-search input {min-width:0;width:100%;background:transparent;border:0;outline:none;font-size:12px;color:#23334b}
+  .global-search input::placeholder {color:#abb4c3}
+  .icon-btn {width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;position:relative;background:transparent;border:0;color:#64728a;border-radius:10px}
+  .icon-btn:hover {background:#f0f3f9;color:var(--blue)}
+  .notif-dot {position:absolute;top:7px;right:8px;height:7px;width:7px;border-radius:50%;background:#f39c5b;border:2px solid white;box-sizing:content-box}
+  .top-divider {width:1px;height:31px;background:#e8edf4}
+  .profile-btn {display:flex;align-items:center;gap:10px;border:0;background:transparent;color:var(--ink);padding:5px 0 5px 3px;text-align:left}
+  .avatar {width:35px;height:35px;border-radius:11px;display:grid;place-items:center;background:#dce6fd;color:#3657b3;font-size:12px;font-weight:850;flex-shrink:0}
+  .avatar.purple {background:#eee6ff;color:#805bd3}.avatar.orange {background:#fff0dc;color:#ca8330}.avatar.green {background:#e3f7ed;color:#278b67}
+  .profile-meta strong {font-size:11.5px;font-weight:800;display:block;white-space:nowrap}
+  .profile-meta small {font-size:10.5px;color:#9aa5b6;display:block;margin-top:3px}
+  .profile-btn .ico {width:14px;height:14px;color:#8290a6}
+  .content {width:100%;max-width:1620px;margin:0 auto;padding:31px 34px 48px}
+  .welcome {display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:26px}
+  .eyebrow {color:#8190a6;display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.2px}
+  .eyebrow .small-dot {height:6px;width:6px;background:#43bb98;border-radius:50%}
+  h1 {color:var(--heading);font-size:27px;line-height:1.2;letter-spacing:-.95px;margin:8px 0 6px;font-weight:800}
+  .subtitle {color:#8895a9;font-size:12.5px;line-height:1.6;margin:0}
+  .head-actions {display:flex;align-items:center;gap:10px}
+  .btn {border:1px solid var(--border);border-radius:10px;background:white;color:#495671;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:11.5px;font-weight:750;padding:11px 14px;white-space:nowrap;min-height:40px;transition:.15s}
+  .btn:hover {background:#f5f7fd;border-color:#d7dff0}
+  .btn .ico {width:16px;height:16px}
+  .btn.primary {background:var(--blue);color:white;border-color:var(--blue);box-shadow:0 7px 14px #4c67ed20}
+  .btn.primary:hover {background:var(--blue-dark)}
+  .btn.ghost {background:transparent}
+  .btn.danger {color:#b75753;background:#fff7f6;border-color:#ffe4e1}
+  .stats {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:20px}
+  .stat {background:white;border:1px solid var(--border);border-radius:15px;padding:18px 19px;min-height:143px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .stat-title {color:#8b97aa;font-size:11.5px;font-weight:600;margin-bottom:13px;display:flex;align-items:center;justify-content:space-between;gap:6px}
+  .stat-icon {display:grid;place-items:center;width:32px;height:32px;border-radius:9px;background:#eff2ff;color:#5671e8}
+  .stat-icon .ico {width:17px;height:17px}
+  .stat-icon.orange {background:#fff3e7;color:#dc9351}
+  .stat-icon.green {background:#e9faf2;color:#32a783}
+  .stat-icon.violet {background:#f1edff;color:#8e79d5}
+  .stat-value {font-size:27px;font-weight:850;color:#182741;letter-spacing:-1.2px;line-height:1.1}
+  .stat-bottom {display:flex;gap:6px;align-items:center;font-size:10.2px;color:#9aa4b4;margin-top:12px}
+  .delta {font-weight:800;color:#239a73;background:#e9faf2;padding:3px 6px;border-radius:5px}
+  .delta.orange {background:#fff4e8;color:#d58b40}
+  .stat-spark {position:absolute;right:16px;bottom:20px;width:70px;height:33px;fill:none;stroke:#89a0f7;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
+  .panels {display:grid;grid-template-columns:minmax(0,1.58fr) minmax(270px,1fr);gap:18px;margin-bottom:20px}
+  .card {border:1px solid var(--border);border-radius:16px;background:white;box-shadow:var(--shadow);min-width:0;overflow:hidden}
+  .card-heading {display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 18px}
+  .card-heading h2 {font-size:15px;letter-spacing:-.3px;color:#26354d;margin:0;font-weight:800}
+  .card-heading p {font-size:11px;color:#9ba5b5;margin:5px 0 0}
+  .text-link {font-size:11px;color:var(--blue);border:0;background:transparent;font-weight:800;white-space:nowrap;display:flex;align-items:center;gap:4px;padding:6px 0}
+  .text-link .ico {height:13px;width:13px}
+  .performance {background:linear-gradient(135deg,#1b2f50,#172b49 75%,#21375d);color:white;border:0;min-height:279px;padding:21px 24px;position:relative}
+  .performance:before {content:"";width:270px;height:270px;position:absolute;top:-160px;right:-60px;border-radius:50%;background:radial-gradient(circle,#5e72d126,transparent 70%);pointer-events:none}
+  .performance .card-heading {margin:0}
+  .performance h2 {color:white}
+  .performance .card-heading p {color:#8ca2c2}
+  .performance .chart-period {color:#c2cce0;border:1px solid #435371;border-radius:8px;font-size:10px;font-weight:700;background:#2e4263;padding:7px 9px}
+  .perf-top {display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:17px}
+  .perf-number {font-size:29px;font-weight:850;letter-spacing:-1.2px;line-height:1}
+  .perf-number span {font-size:11px;font-weight:600;color:#a0b1cc;letter-spacing:0;margin-left:5px}
+  .perf-change {font-size:10px;font-weight:800;color:#93e4c8;background:#264a53;border-radius:6px;padding:6px 8px}
+  .chart {height:128px;position:relative;margin-top:13px;padding:12px 0 0 25px}
+  .chart-grid {position:absolute;inset:3px 0 24px 25px;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none}
+  .chart-grid i {width:100%;border-top:1px dashed #5c6d891f}
+  .chart-y {position:absolute;top:7px;left:0;bottom:27px;display:flex;flex-direction:column;justify-content:space-between;color:#6f85a8;font-size:9px;font-style:normal}
+  .bars {position:relative;display:flex;height:100%;align-items:flex-end;justify-content:space-around;gap:10px}
+  .bar-col {height:100%;flex:1;max-width:46px;display:flex;align-items:center;flex-direction:column;justify-content:flex-end;gap:8px;color:#89a0c1;font-size:9.5px}
+  .bar {width:100%;max-width:30px;height:var(--h);min-height:8px;background:#536c9b;border-radius:6px 6px 3px 3px;transition:height .35s;position:relative}
+  .bar.strong {background:linear-gradient(180deg,#83a4ff,#5479f5)}
+  .bar:hover:after {content:attr(data-count) ' turnovers';position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);font-size:10px;background:#fff;color:#172d50;padding:6px 8px;border-radius:5px;white-space:nowrap;z-index:3}
+  .attention {padding:21px 20px 12px;min-height:279px}
+  .attention-list {display:flex;flex-direction:column}
+  .attention-item {display:flex;gap:11px;align-items:center;padding:12px 0;border-top:1px solid #edf0f5}
+  .attention-item:first-child {border-top:0;padding-top:2px}
+  .attention-icon {width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex-shrink:0}
+  .attention-icon .ico {width:17px;height:17px}
+  .attention-icon.orange {color:#d9914c;background:#fff2e3}
+  .attention-icon.purple {color:#8765d9;background:#f0ecff}
+  .attention-icon.blue {color:#5d85dc;background:#eaf2ff}
+  .attention-item-body {min-width:0;flex:1}
+  .attention-item strong {display:block;color:#2c3950;font-size:11.5px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .attention-item small {display:block;margin-top:4px;font-size:10px;color:#99a4b5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mini-review {font-size:10px;font-weight:800;color:var(--blue);background:#eff2ff;border:0;border-radius:8px;padding:8px 10px}
+  .lower-panels {display:grid;grid-template-columns:minmax(0,1.75fr) minmax(275px,1fr);gap:18px;align-items:start}
+  .projects-card {padding:20px 20px 10px}
+  .project-head {display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .project-head .card-heading {margin:0}
+  .filter-row {display:flex;gap:7px;align-items:center;margin:17px 0 13px;overflow:auto;scrollbar-width:none}
+  .filter-row::-webkit-scrollbar {display:none}
+  .filter-pill {font-size:10.5px;font-weight:750;white-space:nowrap;border:1px solid #e9edf5;background:white;border-radius:8px;padding:8px 12px;color:#8995a9}
+  .filter-pill.active {background:#eef2ff;border-color:#dbe4ff;color:#4263e8}
+  .table-head,.project-row {display:grid;grid-template-columns:minmax(0,1.7fr) minmax(90px,.9fr) minmax(90px,.75fr) 68px 18px;gap:10px;align-items:center}
+  .table-head {padding:12px 11px;color:#a4afbe;background:#f8f9fc;font-size:10px;font-weight:750;border-radius:8px}
+  .project-row {width:100%;text-align:left;border:0;border-bottom:1px solid #eef1f6;background:white;padding:14px 11px;transition:.15s;min-height:76px}
+  .project-row:hover {background:#fbfcff}
+  .project-row:last-child {border:0}
+  .unit-cell {display:flex;gap:11px;align-items:center;min-width:0}
+  .unit-thumb {height:39px;width:39px;border-radius:10px;display:grid;place-items:center;flex-shrink:0;background:linear-gradient(135deg,#e5ecfa,#d2e0f5);color:#607cac;overflow:hidden}
+  .unit-thumb.v2 {background:linear-gradient(135deg,#e8eff3,#c9e2e1);color:#5c9793}
+  .unit-thumb.v3 {background:linear-gradient(135deg,#f0e7db,#e6d5c7);color:#a48a72}
+  .unit-thumb.v4 {background:linear-gradient(135deg,#e8e6f5,#dcd5f2);color:#8c7cbd}
+  .unit-thumb .ico {height:21px;width:21px}
+  .unit-cell strong {display:block;font-size:11.5px;font-weight:800;color:#2b3b54;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .unit-cell small {display:block;color:#9ba6b5;margin-top:5px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .progress-label {display:flex;justify-content:space-between;font-size:10px;color:#6d7c92;font-weight:750;margin-bottom:7px}
+  .progress-track {height:5px;border-radius:50px;background:#edf0f8;overflow:hidden}
+  .progress-track span {display:block;height:100%;width:var(--progress);border-radius:50px;background:#6685f2}
+  .status {display:inline-flex;align-items:center;gap:5px;border-radius:7px;font-size:9.3px;font-weight:800;padding:6px 8px;white-space:nowrap}
+  .status:before {content:"";height:5px;width:5px;border-radius:50%;background:currentColor}
+  .status.progress {background:#edf3ff;color:#5d7fe8}
+  .status.review {background:#fff3e7;color:#cf9250}
+  .status.ready {background:#e8f8ef;color:#2b9c72}
+  .status.scheduled {background:#f1edff;color:#8871d0}
+  .due {color:#68768b;font-size:10.5px;white-space:nowrap}
+  .project-chevron {color:#b1bccd;width:15px!important;height:15px!important}
+  .empty-state {padding:26px 10px;text-align:center;color:#93a0b2;font-size:12px}
+  .activity {padding:20px 20px 17px}
+  .activity-list {display:flex;flex-direction:column;position:relative;margin-top:7px}
+  .activity-entry {display:grid;grid-template-columns:31px 1fr;gap:11px;position:relative;padding:10px 0 14px}
+  .activity-entry:after {content:"";height:calc(100% - 24px);width:1px;position:absolute;background:#e6ebf4;left:15px;top:38px}
+  .activity-entry:last-child:after {display:none}
+  .activity-orb {display:grid;place-items:center;border:1px solid #edf0f8;background:#f4f7fd;color:#5a7bd5;border-radius:50%;width:31px;height:31px;position:relative;z-index:1}
+  .activity-orb .ico {width:15px;height:15px}
+  .activity-orb.green {background:#eaf9f2;color:#37a480;border-color:#e3f7ed}
+  .activity-orb.orange {background:#fff5ea;color:#d69a5b;border-color:#fff0de}
+  .activity-entry strong {display:block;color:#36445c;font-size:11.5px;font-weight:750;line-height:1.45}
+  .activity-entry p {color:#96a2b4;font-size:10.5px;line-height:1.5;margin:4px 0}
+  .activity-entry time {font-size:9.5px;color:#aeb7c5}
+  .activity-bottom {background:#f8faff;text-align:center;padding:11px;margin-top:4px;border-radius:9px;border:0;width:100%;font-size:10.5px;color:#5675d9;font-weight:800}
+  .bottom-nav {display:none}
+  .mobile-brand,.mobile-search {display:none}
+  .popover {position:absolute;z-index:12;background:white;border:1px solid var(--border);border-radius:13px;box-shadow:0 16px 45px #23385b1f;padding:10px;width:292px;right:34px;top:64px;display:none}
+  .popover.show {display:block}
+  .pop-title {font-size:12px;font-weight:850;color:#27354f;padding:8px 9px 12px}
+  .pop-item {display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;padding:11px 9px;border-radius:8px;font-size:11.5px;color:#3d4d68}
+  .pop-item:hover {background:#f5f7fd}
+  .pop-item small {display:block;font-size:10px;color:#9da8b7;margin-top:4px}
+  .pop-item .ico {color:var(--blue);width:17px;height:17px}
+  .popover .role-note {font-size:10px;color:#98a3b6;padding:10px 9px 5px;border-top:1px solid #edf0f6}
+  .overlay {position:fixed;inset:0;background:#121f34a1;display:none;z-index:20;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(3px)}
+  .overlay.show {display:flex}
+  .modal {width:min(100%,550px);max-height:min(90vh,850px);overflow:auto;background:white;border-radius:19px;box-shadow:0 25px 85px #09172e4a;position:relative}
+  .modal-head {padding:23px 25px 18px;border-bottom:1px solid #edf0f5;display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+  .modal-eyebrow {color:#607ceb;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:800}
+  .modal h2 {font-size:20px;letter-spacing:-.6px;margin:6px 0 5px;color:#25354d}
+  .modal-head p {font-size:11.5px;color:#95a0af;margin:0}
+  .modal-body {padding:22px 25px}
+  .form-grid {display:grid;grid-template-columns:1fr 1fr;gap:15px}
+  .field {display:flex;flex-direction:column;gap:7px;min-width:0}
+  .field.full {grid-column:1/-1}
+  .field label,.field-label {font-size:11px;font-weight:800;color:#506078}
+  .field input,.field select,.field textarea {width:100%;background:#fafbfe;border:1px solid #e4e9f2;border-radius:9px;padding:11px 12px;font-size:12px;color:#27354c;min-height:42px}
+  .field textarea {resize:vertical;min-height:74px}
+  .help-text {font-size:10px;color:#9da7b6;line-height:1.5;margin:2px 0 0}
+  .checkbox-line {display:flex;gap:9px;align-items:center;font-size:11.5px;color:#5a6982;padding:8px 0}
+  .checkbox-line input {accent-color:var(--blue);width:15px;height:15px}
+  .modal-footer {border-top:1px solid #eef1f6;padding:16px 25px;display:flex;justify-content:flex-end;gap:10px}
+  .drawer-overlay {justify-content:flex-end;padding:0}
+  .drawer {background:white;width:min(100%,485px);height:100%;box-shadow:-15px 0 65px #07162e30;overflow:auto}
+  .drawer-cover {background:linear-gradient(135deg,#e9eefc,#d5e3f6);height:136px;display:flex;align-items:center;justify-content:center;color:#91a6cf;position:relative}
+  .drawer-cover .ico {height:64px;width:64px;stroke-width:1}
+  .drawer-cover .drawer-close {position:absolute;top:15px;right:15px;background:#ffffffc9}
+  .drawer-content {padding:24px}
+  .drawer-overline {font-size:10px;color:#8b9ab3;letter-spacing:1px;font-weight:850}
+  .drawer-title {font-size:23px;letter-spacing:-.7px;color:#1c2d48;margin:8px 0 6px}
+  .drawer-sub {font-size:12px;color:#8b99ac;margin:0 0 18px}
+  .drawer-metrics {display:flex;justify-content:space-between;border:1px solid var(--border);border-radius:12px;margin:15px 0 21px;padding:14px}
+  .drawer-metrics span {display:block;color:#a0abb9;font-size:10px;margin-bottom:6px}
+  .drawer-metrics strong {font-size:14px;color:#25374f}
+  .detail-tabs {display:flex;gap:4px;border-bottom:1px solid #e8edf5;overflow:auto;scrollbar-width:none}
+  .detail-tabs button {border:0;background:transparent;font-size:11px;color:#8997ab;padding:12px 11px;white-space:nowrap;font-weight:800;border-bottom:2px solid transparent}
+  .detail-tabs button.active {color:var(--blue);border-color:var(--blue)}
+  .detail-pane {padding:17px 0 10px;min-height:185px}
+  .detail-row {padding:12px 0;display:flex;align-items:center;gap:10px;border-bottom:1px solid #eef1f5;color:#43516a;font-size:12px}
+  .detail-row .ico {color:#6484e9;width:16px;height:16px}
+  .detail-row span {flex:1}
+  .detail-row small {color:#8b99a9}
+  .photo-lock {font-size:10px;color:#d4934d;background:#fff5e9;padding:5px 7px;border-radius:5px}
+  .mini-chat-bubble {font-size:11px;line-height:1.6;background:#f3f6fb;padding:11px 13px;border-radius:10px;margin-bottom:9px;max-width:85%}
+  .mini-chat-bubble.mine {background:#edf2ff;margin-left:auto}
+  .chat-compose {display:flex;align-items:center;gap:9px;margin-top:14px}
+  .chat-compose input {flex:1;min-width:0;padding:10px;border:1px solid var(--border);border-radius:9px;font-size:11.5px}
+  .toast {position:fixed;z-index:45;bottom:25px;left:50%;transform:translate(-50%,18px);opacity:0;pointer-events:none;background:#1d2f4b;color:white;box-shadow:0 12px 36px #0d1b3350;padding:12px 17px;border-radius:10px;font-size:12px;font-weight:650;max-width:90vw;transition:.22s}
+  .toast.show {transform:translate(-50%,0);opacity:1}
+  .module-list {display:grid;gap:10px}
+  .module-tile {display:flex;gap:12px;align-items:center;border:1px solid var(--border);padding:12px;border-radius:10px}
+  .module-tile .ico {color:#5a73dc}
+  .module-tile strong {font-size:12px;color:#344158;display:block}
+  .module-tile small {display:block;color:#96a2b3;font-size:10px;margin-top:4px}
+  .demo-banner {font-size:10.5px;color:#98a5b4;background:#f9fafc;border:1px dashed #e3e8f1;padding:10px 12px;border-radius:8px;line-height:1.5;margin-top:15px}
+  .app-end {margin-top:25px;text-align:center;color:#b0b9c6;font-size:10px}
+
+  /* Container queries make the preview switch responsive without an iframe or dependencies. */
+  @container appstage (max-width:1050px) {
+    .stats {grid-template-columns:repeat(2,minmax(0,1fr))}
+    .panels,.lower-panels {grid-template-columns:minmax(0,1fr)}
+    .main-shell .content {padding-left:25px;padding-right:25px}
+    .global-search {width:180px}
+  }
+  @container appstage (max-width:710px) {
+    .app {display:flex;flex-direction:column;height:100%;min-height:0}
+    .sidebar {display:none}
+    .main-shell {flex:1;min-height:0;overflow:auto;scrollbar-width:none;padding-bottom:0}
+    .topbar {height:67px;flex-shrink:0;padding:12px 19px;position:sticky;top:0;z-index:6}
+    .breadcrumb {display:none}
+    .mobile-brand {display:flex;align-items:center;gap:8px;font-weight:850;letter-spacing:-.5px;font-size:17px;color:#1b2a42}
+    .mobile-brand .brand-logo {height:30px;width:30px;border-radius:9px;box-shadow:none}
+    .mobile-brand .brand-logo .ico {height:18px;width:18px}
+    .top-actions {gap:5px}
+    .global-search,.top-divider,.profile-meta,.profile-btn>.ico {display:none}
+    .mobile-search {display:inline-flex}
+    .profile-btn .avatar {height:31px;width:31px;border-radius:50%}
+    .content {padding:22px 18px 29px!important}
+    .welcome {align-items:flex-start;margin-bottom:20px;gap:12px}
+    .welcome h1 {font-size:24px;letter-spacing:-.8px;margin-top:7px}
+    .welcome .subtitle {font-size:11.5px;max-width:280px}
+    .welcome .head-actions .btn.ghost {display:none}
+    .welcome .head-actions .btn.primary {height:38px;width:38px;min-height:38px;padding:0;border-radius:11px;font-size:0}
+    .welcome .head-actions .btn.primary .ico {width:19px;height:19px}
+    .stats {display:flex;overflow:auto;gap:11px;scrollbar-width:none;scroll-snap-type:x mandatory;margin:0 -18px 17px;padding:0 18px 3px}
+    .stats::-webkit-scrollbar {display:none}
+    .stat {flex:0 0 176px;min-height:130px;padding:15px 15px;scroll-snap-align:start}
+    .stat-title {font-size:10.5px;margin-bottom:14px}.stat-value {font-size:27px}
+    .stat-spark {width:60px;right:9px;bottom:15px}
+    .panels,.lower-panels {grid-template-columns:1fr;gap:15px;margin-bottom:15px}
+    .performance {min-height:280px;padding:20px 19px}
+    .performance .card-heading h2 {font-size:14px}
+    .attention {min-height:unset;padding:20px 17px 9px}
+    .projects-card {padding:19px 14px 6px}
+    .projects-card .card-heading h2 {font-size:14px}
+    .projects-card .card-heading p {font-size:10px}
+    .project-head {align-items:center}
+    .project-head .text-link {font-size:10px}
+    .filter-row {margin-top:14px}
+    .table-head {display:none}
+    .project-row {display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:'unit status' 'bar due';gap:12px 10px;min-height:92px;padding:13px 1px}
+    .unit-cell {grid-area:unit;gap:10px}
+    .unit-thumb {height:38px;width:38px}
+    .unit-cell strong {font-size:11px}
+    .status {grid-area:status;font-size:9px}
+    .project-row>.progress-cell {grid-area:bar;padding-left:48px}
+    .project-row>.status-cell {grid-area:status}
+    .project-row>.due {grid-area:due;text-align:right}
+    .project-chevron {display:none}
+    .activity {padding:20px 17px 15px}
+    .app-end {margin-bottom:12px}
+    .bottom-nav {display:flex;background:white;border-top:1px solid #e6eaf2;flex-shrink:0;justify-content:space-around;gap:3px;padding:9px 10px max(11px, env(safe-area-inset-bottom));z-index:7}
+    .bottom-nav button {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:transparent;border:0;color:#9ba7b8;font-size:9.5px;font-weight:650;min-width:57px}
+    .bottom-nav button .ico {height:20px;width:20px}
+    .bottom-nav button.active {color:#4668ec}
+    .popover {top:61px;right:8px;width:min(295px,calc(100% - 16px))}
+  }
+  .stage.phone .overlay {position:absolute}
+  .stage.phone .drawer {width:100%;height:100%}
+  .stage.phone .modal {max-height:94%}
+  .stage.phone .modal-head,.stage.phone .modal-body,.stage.phone .modal-footer {padding-left:18px;padding-right:18px}
+  .stage.phone .toast {position:absolute;bottom:60px;width:max-content;text-align:center}
+  @media(max-width:710px) {
+    .demo-toolbar {display:none}
+    .preview-bg {min-height:0}
+    .preview-bg.mobile-mode {background:var(--bg);padding:0}
+    .stage,.stage.phone {max-width:none;width:100%;height:100dvh;min-height:0;border:0;border-radius:0;box-shadow:none}
+    .stage.phone:before {display:none}
+    .stage .overlay {position:fixed!important}
+    .stage .toast {position:fixed;bottom:75px}
+    .modal {max-height:90vh}
+    .drawer {width:100%}
+  }
+  @media (prefers-reduced-motion: reduce) {*,*:before,*:after {scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<!-- Embedded SVG sprite: no external scripts, fonts, images or network requests. -->
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 21v-5h6v5M8 8h2m4 0h2M8 12h2m4 0h2"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1zM9 21v-7h6v7"/></symbol>
+  <symbol id="i-briefcase" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18M10 12v2h4v-2"/></symbol>
+  <symbol id="i-checklist" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="m8 9 1.5 1.5L12 8M14 9h3M8 16h9"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM14 3v6h5M8 14h8m-8 4h8"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 11.3a8.5 8.5 0 0 1-8.5 8.5 9 9 0 0 1-4-.9L3 21l1.4-5.2a8.5 8.5 0 1 1 16.6-4.5z"/><path d="M8 11h8M8 14h5"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V11M10 20V4M16 20v-8M22 20V7"/></symbol>
+  <symbol id="i-team" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2zM17 5a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5v1"/></symbol>
+  <symbol id="i-setting" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="m19.5 14 .2 2.3-2.4 2.4-2.3-.2-1 1.9h-4l-1-1.9-2.3.2-2.4-2.4.2-2.3-1.9-1v-2l1.9-1-.2-2.3 2.4-2.4 2.3.2 1-1.9h4l1 1.9 2.3-.2 2.4 2.4-.2 2.3 1.9 1v2z"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.5 2.5 0 1 1 4.2 2c-1.5 1.2-2 1.3-2 3M12 17h.01"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 9h18c0-1-3-2-3-9M10 21h4"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5 5 19"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="m12 16 0-13m-5 5 5-5 5 5M4 17v4h16v-4"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M3 8h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="14" r="3"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 2 9 4v6c0 5-3 8-9 10-6-2-9-5-9-10V6zM8 12l3 3 5-6"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24"><path d="m3 17 6-6 4 4 8-9M15 6h6v6"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4zM11 13 22 2"/></symbol>
+  <symbol id="i-layer" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5zM3 13l9 5 9-5M3 18l9 5 9-5"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="15" rx="2"/><path d="M8 22h8M12 18v4"/></symbol>
+  <symbol id="i-exclamation" viewBox="0 0 24 24"><path d="m12 3 10 18H2zM12 9v5m0 3h.01"/></symbol>
+</svg>
+
+<div class="demo-toolbar" aria-label="Prototype preview controls">
+  <div class="demo-brand"><span class="demo-dot"></span> TurnoverOS <span class="demo-desc">Responsive dashboard · UI prototype</span></div>
+  <div class="demo-switch" aria-label="Choose a layout preview">
+    <button id="webPreview" class="active" aria-pressed="true" onclick="setPreview('web')"><svg class="ico"><use href="#i-monitor"/></svg> Web view</button>
+    <button id="mobilePreview" aria-pressed="false" onclick="setPreview('mobile')"><svg class="ico"><use href="#i-phone"/></svg> Mobile view</button>
+  </div>
+  <div class="demo-note">Front-end only · Sample data</div>
+</div>
+
+<div class="preview-bg" id="previewBg">
+  <div class="stage" id="stage">
+    <div class="app">
+      <aside class="sidebar" aria-label="Primary navigation">
+        <div class="brand"><div class="brand-logo"><svg class="ico"><use href="#i-building"/></svg></div><div><div class="brand-word">turnover<span style="color:#91a7ff">OS</span></div><span class="brand-sub">PROPERTY OPERATIONS</span></div></div>
+        <p class="side-caption">Workspace</p>
+        <nav class="sidebar-nav">
+          <button class="side-link active" data-nav="Dashboard" onclick="navigate('Dashboard')"><svg class="ico"><use href="#i-grid"/></svg><span>Overview</span></button>
+          <button class="side-link" data-nav="Projects" onclick="navigate('Projects')"><svg class="ico"><use href="#i-briefcase"/></svg><span>Projects</span><span class="side-count">18</span></button>
+          <button class="side-link" data-nav="Properties" onclick="navigate('Properties')"><svg class="ico"><use href="#i-building"/></svg><span>Properties & Units</span></button>
+          <button class="side-link" data-nav="Templates" onclick="navigate('Templates')"><svg class="ico"><use href="#i-layer"/></svg><span>Template Manager</span></button>
+          <button class="side-link" data-nav="Messages" onclick="navigate('Messages')"><svg class="ico"><use href="#i-chat"/></svg><span>Messages</span><span class="side-count">3</span></button>
+          <button class="side-link" data-nav="Invoices" onclick="navigate('Invoices')"><svg class="ico"><use href="#i-file"/></svg><span>Invoices & Proposals</span></button>
+          <button class="side-link" data-nav="Analytics" data-admin="true" onclick="navigate('Analytics')"><svg class="ico"><use href="#i-chart"/></svg><span>Cost Analytics</span></button>
+          <button class="side-link" data-nav="Team" data-admin="true" onclick="navigate('Team')"><svg class="ico"><use href="#i-team"/></svg><span>User Management</span></button>
+        </nav>
+        <div class="side-sep"></div>
+        <p class="side-caption">General</p>
+        <nav class="sidebar-nav">
+          <button class="side-link" data-nav="Settings" onclick="navigate('Settings')"><svg class="ico"><use href="#i-setting"/></svg><span>Settings</span></button>
+          <button class="side-link" data-nav="Help" onclick="navigate('Help')"><svg class="ico"><use href="#i-help"/></svg><span>Help & Support</span></button>
+        </nav>
+        <div class="sidebar-grow"></div>
+        <div class="sidebar-help"><div class="help-orb"><svg class="ico"><use href="#i-shield"/></svg></div><strong>Keep every turn on track.</strong><p>Review task milestones and see what needs approval.</p><button onclick="navigate('Projects')">View projects →</button></div>
+        <div class="sidebar-version">Dashboard preview · v1.0</div>
+      </aside>
+
+      <div class="main-shell" id="scrollArea">
+        <header class="topbar">
+          <div class="breadcrumb"><svg class="ico"><use href="#i-home"/></svg> Workspace <svg class="ico"><use href="#i-chevron"/></svg> <strong>Overview</strong></div>
+          <div class="mobile-brand"><div class="brand-logo"><svg class="ico"><use href="#i-building"/></svg></div><span>turnover<span style="color:var(--blue)">OS</span></span></div>
+          <div class="top-actions">
+            <div class="global-search"><svg class="ico"><use href="#i-search"/></svg><input type="search" id="topSearch" placeholder="Search projects, units..." oninput="searchProjects(this.value)" aria-label="Search projects" /></div>
+            <button class="icon-btn mobile-search" aria-label="Search" onclick="openMobileSearch()"><svg class="ico"><use href="#i-search"/></svg></button>
+            <button class="icon-btn" aria-label="Notifications" aria-expanded="false" id="notificationBtn" onclick="toggleDashboardPopover('notificationPop')"><svg class="ico"><use href="#i-bell"/></svg><span class="notif-dot"></span></button>
+            <div class="top-divider"></div>
+            <button class="profile-btn" aria-label="Preview dashboard as a different role" aria-expanded="false" id="roleBtn" onclick="toggleDashboardPopover('rolePop')"><span class="avatar" id="profileAvatar">AD</span><span class="profile-meta"><strong id="profileName">Admin Demo</strong><small id="profileRole">Administrator</small></span><svg class="ico"><use href="#i-down"/></svg></button>
+          </div>
+          <div class="popover" id="notificationPop">
+            <div class="pop-title">Notifications <span style="float:right;color:var(--blue);font-size:10px">3 new</span></div>
+            <button class="pop-item" onclick="openProject('TRN-2046')"><svg class="ico"><use href="#i-file"/></svg><span><strong>Invoice awaiting approval</strong><small>Parkside Heights · 12 minutes ago</small></span></button>
+            <button class="pop-item" onclick="openProject('TRN-2048')"><svg class="ico"><use href="#i-camera"/></svg><span><strong>Flooring photos uploaded</strong><small>Maple Grove · 46 minutes ago</small></span></button>
+            <button class="pop-item" onclick="openProject('TRN-2044')"><svg class="ico"><use href="#i-chat"/></svg><span><strong>New project message</strong><small>Westbridge Lofts · 1 hour ago</small></span></button>
+          </div>
+          <div class="popover" id="rolePop">
+            <div class="pop-title">Preview as a role</div>
+            <button class="pop-item" onclick="setRole('Admin')"><svg class="ico"><use href="#i-shield"/></svg> Admin / Owner</button>
+            <button class="pop-item" onclick="setRole('Property Manager')"><svg class="ico"><use href="#i-building"/></svg> Property Manager</button>
+            <button class="pop-item" onclick="setRole('Supervisor')"><svg class="ico"><use href="#i-checklist"/></svg> Project Supervisor</button>
+            <button class="pop-item" onclick="setRole('Vendor')"><svg class="ico"><use href="#i-team"/></svg> Vendor / Contractor</button>
+            <div class="role-note">Visual role demo only — not real authorization.</div>
+          </div>
+        </header>
+
+        <main class="content">
+          <section class="welcome">
+            <div><div class="eyebrow"><span class="small-dot"></span><span id="todayLabel">MONDAY, OCTOBER 26, 2026</span></div><h1 id="pageTitle">Dashboard overview</h1><p class="subtitle" id="pageSubtitle">Stay on top of properties, turnovers and approvals in one place.</p></div>
+            <div class="head-actions"><button class="btn ghost" onclick="navigate('Projects')"><svg class="ico"><use href="#i-briefcase"/></svg> All projects</button><button class="btn primary" onclick="openNewProject()"><svg class="ico"><use href="#i-plus"/></svg> New project</button></div>
+          </section>
+
+          <section class="stats" aria-label="Portfolio key performance indicators">
+            <article class="stat"><div class="stat-title">Active turnovers <div class="stat-icon"><svg class="ico"><use href="#i-briefcase"/></svg></div></div><div class="stat-value" id="activeCount">18</div><div class="stat-bottom"><span class="delta">↑ 12%</span> from last month</div><svg class="stat-spark" viewBox="0 0 80 35"><path d="M1 27 14 24 25 28 36 16 47 20 58 8 79 4"/></svg></article>
+            <article class="stat"><div class="stat-title">Pending approvals <div class="stat-icon orange"><svg class="ico"><use href="#i-clock"/></svg></div></div><div class="stat-value">07</div><div class="stat-bottom"><span class="delta orange">3 urgent</span> need your review</div><svg class="stat-spark" style="stroke:#e5b37c" viewBox="0 0 80 35"><path d="M1 28 15 21 28 24 40 12 53 18 65 8 79 17"/></svg></article>
+            <article class="stat"><div class="stat-title">Ready for move-in <div class="stat-icon green"><svg class="ico"><use href="#i-check"/></svg></div></div><div class="stat-value">05</div><div class="stat-bottom"><span class="delta">↑ 2 units</span> this week</div><svg class="stat-spark" style="stroke:#86ceba" viewBox="0 0 80 35"><path d="M1 27 12 27 25 22 36 22 48 12 61 15 79 4"/></svg></article>
+            <article class="stat"><div class="stat-title">Avg. turnaround <div class="stat-icon violet"><svg class="ico"><use href="#i-calendar"/></svg></div></div><div class="stat-value">8.4 <span style="font-size:13px;color:#9aa5b5;letter-spacing:0">days</span></div><div class="stat-bottom"><span class="delta">↓ 1.2 days</span> faster than before</div><svg class="stat-spark" style="stroke:#b1a5ee" viewBox="0 0 80 35"><path d="M1 4 12 10 25 8 36 19 48 14 62 27 79 29"/></svg></article>
+          </section>
+
+          <div class="panels">
+            <section class="card performance" id="performancePanel"><div class="card-heading"><div><h2>Turnover performance</h2><p>Units completed over the last six months</p></div><span class="chart-period">Last 6 months</span></div>
+              <div class="perf-top"><div class="perf-number">121<span>completed units</span></div><span class="perf-change">↗ +18.3%</span></div>
+              <div class="chart" aria-label="Turnovers completed: May 14, Jun 18, Jul 16, Aug 24, Sep 20, Oct 29"><div class="chart-grid"><i></i><i></i><i></i><i></i></div><div class="chart-y"><span>30</span><span>20</span><span>10</span><span>0</span></div><div class="bars">
+                <div class="bar-col"><div class="bar" style="--h:45%" data-count="14"></div>May</div><div class="bar-col"><div class="bar" style="--h:58%" data-count="18"></div>Jun</div><div class="bar-col"><div class="bar" style="--h:52%" data-count="16"></div>Jul</div><div class="bar-col"><div class="bar" style="--h:77%" data-count="24"></div>Aug</div><div class="bar-col"><div class="bar" style="--h:65%" data-count="20"></div>Sep</div><div class="bar-col"><div class="bar strong" style="--h:94%" data-count="29"></div>Oct</div>
+              </div></div>
+            </section>
+            <section class="card attention"><div class="card-heading"><div><h2>Needs your attention</h2><p>Quick actions to keep things moving</p></div><button class="text-link" onclick="openInfo('Approvals')">View all <svg class="ico"><use href="#i-arrow"/></svg></button></div>
+              <div class="attention-list">
+                <div class="attention-item"><div class="attention-icon orange"><svg class="ico"><use href="#i-file"/></svg></div><div class="attention-item-body"><strong>Invoice needs approval</strong><small>Parkside Heights · Unit B-112</small></div><button class="mini-review" onclick="openProject('TRN-2046','Invoices')">Review</button></div>
+                <div class="attention-item"><div class="attention-icon purple"><svg class="ico"><use href="#i-camera"/></svg></div><div class="attention-item-body"><strong>Milestone photos submitted</strong><small>Maple Grove · Unit A-304</small></div><button class="mini-review" onclick="openProject('TRN-2048','Tasks')">Review</button></div>
+                <div class="attention-item"><div class="attention-icon blue"><svg class="ico"><use href="#i-exclamation"/></svg></div><div class="attention-item-body"><strong>Project deadline approaching</strong><small>Westbridge Lofts · Unit C-206</small></div><button class="mini-review" onclick="openProject('TRN-2044')">View</button></div>
+              </div>
+            </section>
+          </div>
+
+          <div class="lower-panels">
+            <section class="card projects-card" id="projectsSection"><div class="project-head"><div class="card-heading"><div><h2>Current turnovers</h2><p>Track your projects and completion progress</p></div></div><button class="text-link" onclick="navigate('Projects')">View all <svg class="ico"><use href="#i-arrow"/></svg></button></div>
+              <div class="filter-row" aria-label="Filter projects by status">
+                <button class="filter-pill active" data-filter="All" onclick="setFilter('All')">All projects</button>
+                <button class="filter-pill" data-filter="In Progress" onclick="setFilter('In Progress')">In progress</button>
+                <button class="filter-pill" data-filter="Awaiting Review" onclick="setFilter('Awaiting Review')">Needs review</button>
+                <button class="filter-pill" data-filter="Ready" onclick="setFilter('Ready')">Ready</button>
+              </div>
+              <div class="table-head"><span>PROPERTY / UNIT</span><span>PROGRESS</span><span>STATUS</span><span>TARGET</span><span></span></div>
+              <div id="projectRows"></div>
+            </section>
+            <section class="card activity"><div class="card-heading"><div><h2>Recent activity</h2><p>What's happening across your team</p></div><button class="text-link" onclick="openInfo('Activity')">View all <svg class="ico"><use href="#i-arrow"/></svg></button></div>
+              <div class="activity-list">
+                <div class="activity-entry"><div class="activity-orb green"><svg class="ico"><use href="#i-check"/></svg></div><div><strong>Flooring milestone completed</strong><p>Prime Turn Co. · Maple Grove A-304</p><time>15 minutes ago</time></div></div>
+                <div class="activity-entry"><div class="activity-orb orange"><svg class="ico"><use href="#i-file"/></svg></div><div><strong>New invoice submitted</strong><p>Northstar Services · Parkside B-112</p><time>42 minutes ago</time></div></div>
+                <div class="activity-entry"><div class="activity-orb"><svg class="ico"><use href="#i-chat"/></svg></div><div><strong>New message in project chat</strong><p>Jordan R. · Westbridge C-206</p><time>1 hour ago</time></div></div>
+                <div class="activity-entry"><div class="activity-orb green"><svg class="ico"><use href="#i-home"/></svg></div><div><strong>Unit approved for move-in</strong><p>Harbor Point · Unit 2-508</p><time>3 hours ago</time></div></div>
+              </div>
+              <button class="activity-bottom" onclick="openInfo('Activity')">See all activity <span aria-hidden="true">→</span></button>
+            </section>
+          </div>
+          <div class="app-end">TurnoverOS UI showcase · Fictional demo data · No backend connected</div>
+        </main>
+      </div>
+      <nav class="bottom-nav" aria-label="Mobile navigation">
+        <button class="active" data-nav="Dashboard" onclick="navigate('Dashboard')"><svg class="ico"><use href="#i-grid"/></svg>Home</button>
+        <button data-nav="Projects" onclick="navigate('Projects')"><svg class="ico"><use href="#i-briefcase"/></svg>Projects</button>
+        <button data-nav="Messages" onclick="navigate('Messages')"><svg class="ico"><use href="#i-chat"/></svg>Chat</button>
+        <button data-nav="Invoices" onclick="navigate('Invoices')"><svg class="ico"><use href="#i-file"/></svg>Invoices</button>
+        <button data-nav="Settings" onclick="navigate('Settings')"><svg class="ico"><use href="#i-setting"/></svg>More</button>
+      </nav>
+    </div>
+
+    <!-- New project prototype modal -->
+    <div class="overlay" id="newProjectOverlay" role="presentation" onclick="if(event.target===this)closeOverlay('newProjectOverlay')">
+      <section class="modal" role="dialog" aria-modal="true" aria-labelledby="newProjectTitle">
+        <header class="modal-head"><div><div class="modal-eyebrow">Project creation · Step 1 of 1</div><h2 id="newProjectTitle">New turnover project</h2><p>Launch a unit turnaround from your dashboard.</p></div><button class="icon-btn" aria-label="Close" onclick="closeOverlay('newProjectOverlay')"><svg class="ico"><use href="#i-close"/></svg></button></header>
+        <form onsubmit="createProject(event)" id="newProjectForm"><div class="modal-body"><div class="form-grid">
+          <div class="field full"><label for="projectName">Project name</label><input id="projectName" name="projectName" required maxlength="80" placeholder="e.g. Full Turnover – Unit 3B" /></div>
+          <div class="field"><label for="projectProperty">Property</label><select id="projectProperty"><option>Maple Grove Residences</option><option>Parkside Heights</option><option>Westbridge Lofts</option><option>Harbor Point</option></select></div>
+          <div class="field"><label for="projectUnit">Unit</label><input id="projectUnit" required maxlength="20" placeholder="e.g. A-305" /></div>
+          <div class="field"><label for="projectSupervisor">Supervisor</label><select id="projectSupervisor"><option>Jordan Reyes</option><option>Andrea Cruz</option><option>Morgan Lee</option></select></div>
+          <div class="field"><label for="projectVendor">Primary vendor</label><select id="projectVendor"><option>Prime Turn Co.</option><option>Northstar Services</option><option>BuildRight Solutions</option></select></div>
+          <div class="field full"><label for="projectTemplate">Scope template</label><select id="projectTemplate"><option>Standard Full Turnover</option><option>Painting & Cleaning</option><option>Flooring Replacement</option><option>Electrical / Plumbing</option></select></div>
+          <div class="field full"><div class="field-label">Mandatory milestone photo checkpoints</div><label class="checkbox-line"><input type="checkbox" checked /> Demolition</label><label class="checkbox-line"><input type="checkbox" checked /> Flooring</label><label class="checkbox-line"><input type="checkbox" /> Painting</label><p class="help-text">Vendors must upload required photos before they can complete these tasks.</p></div>
+        </div><div class="demo-banner">UI demo only: launching a project updates the current page, but does not save anything to a server.</div></div>
+        <footer class="modal-footer"><button type="button" class="btn danger" onclick="closeOverlay('newProjectOverlay');showToast('Draft scrapped. No project was saved.')">Scrap / Cancel</button><button type="submit" class="btn primary"><svg class="ico"><use href="#i-plus"/></svg> Launch project</button></footer></form>
+      </section>
+    </div>
+
+    <!-- Project detail drawer -->
+    <div class="overlay drawer-overlay" id="projectOverlay" role="presentation" onclick="if(event.target===this)closeOverlay('projectOverlay')">
+      <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="detailTitle"><div class="drawer-cover"><svg class="ico"><use href="#i-building"/></svg><button class="icon-btn drawer-close" aria-label="Close project details" onclick="closeOverlay('projectOverlay')"><svg class="ico"><use href="#i-close"/></svg></button></div><div class="drawer-content"><div class="drawer-overline" id="detailCode"></div><h2 class="drawer-title" id="detailTitle"></h2><p class="drawer-sub" id="detailSub"></p><span id="detailStatus"></span><div class="drawer-metrics"><div><span>Completion</span><strong id="detailProgress"></strong></div><div><span>Budget</span><strong id="detailBudget"></strong></div><div><span>Target</span><strong id="detailDue"></strong></div></div><div class="detail-tabs" id="detailTabs"></div><div class="detail-pane" id="detailPane"></div><div class="demo-banner">Interactive UI showcase: uploaded files and messages are not transmitted to a server.</div></div></aside>
+    </div>
+
+    <!-- Additional module preview dialog -->
+    <div class="overlay" id="infoOverlay" role="presentation" onclick="if(event.target===this)closeOverlay('infoOverlay')">
+      <section class="modal" role="dialog" aria-modal="true" aria-labelledby="infoTitle"><header class="modal-head"><div><div class="modal-eyebrow">Module preview</div><h2 id="infoTitle"></h2><p id="infoSub"></p></div><button class="icon-btn" aria-label="Close" onclick="closeOverlay('infoOverlay')"><svg class="ico"><use href="#i-close"/></svg></button></header><div class="modal-body"><div id="infoContent" class="module-list"></div><div class="demo-banner">This screen is a dashboard-focused concept. Full module navigation is outside the scope of this single-page prototype.</div></div><footer class="modal-footer"><button class="btn primary" onclick="closeOverlay('infoOverlay')">Back to dashboard</button></footer></section>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+const icon = name => `<svg class="ico" aria-hidden="true"><use href="#i-${name}"/></svg>`;
+const escapeHtml = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = value => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(value);
+const projects = [
+  {id:'TRN-2048',name:'Maple Grove Residences',unit:'A-304',progress:72,status:'In Progress',due:'Nov 04',budget:4600,spent:3100,vendor:'Prime Turn Co.',supervisor:'Jordan Reyes',variant:'v1'},
+  {id:'TRN-2046',name:'Parkside Heights',unit:'B-112',progress:88,status:'Awaiting Review',due:'Oct 30',budget:3500,spent:2980,vendor:'Northstar Services',supervisor:'Andrea Cruz',variant:'v2'},
+  {id:'TRN-2044',name:'Westbridge Lofts',unit:'C-206',progress:44,status:'In Progress',due:'Nov 02',budget:5200,spent:2180,vendor:'BuildRight Solutions',supervisor:'Morgan Lee',variant:'v3'},
+  {id:'TRN-2040',name:'Harbor Point',unit:'2-508',progress:100,status:'Ready',due:'Oct 28',budget:2950,spent:2750,vendor:'Prime Turn Co.',supervisor:'Jordan Reyes',variant:'v4'},
+  {id:'TRN-2039',name:'Oakview Apartments',unit:'1B',progress:18,status:'Scheduled',due:'Nov 12',budget:4100,spent:300,vendor:'Northstar Services',supervisor:'Andrea Cruz',variant:'v2'},
+  {id:'TRN-2036',name:'Cedar Commons',unit:'D-410',progress:56,status:'In Progress',due:'Nov 07',budget:3900,spent:1600,vendor:'BuildRight Solutions',supervisor:'Morgan Lee',variant:'v1'}
+];
+let activeFilter='All';
+let searchTerm='';
+let selectedProject=null;
+let selectedTab='Tasks';
+let currentRole='Admin';
+let createdCount=0;
+let toastTimer;
+let demoMessages=[];
+function statusClass(s){return s==='In Progress'?'progress':s==='Awaiting Review'?'review':s==='Ready'?'ready':'scheduled'}
+function renderProjects(){
+  const list=projects.filter(p=>(activeFilter==='All'||p.status===activeFilter)&&`${p.name} ${p.unit} ${p.id} ${p.vendor}`.toLowerCase().includes(searchTerm.toLowerCase()));
+  document.getElementById('projectRows').innerHTML=list.length?list.map(p=>`<button class="project-row" onclick="openProject('${p.id}')" aria-label="Open ${escapeHtml(p.name)} Unit ${escapeHtml(p.unit)}">
+    <div class="unit-cell"><div class="unit-thumb ${p.variant}">${icon('building')}</div><div><strong>${escapeHtml(p.name)}</strong><small>Unit ${escapeHtml(p.unit)} · ${escapeHtml(p.title||p.id)}</small></div></div>
+    <div class="progress-cell"><div class="progress-label"><span>Progress</span><span>${p.progress}%</span></div><div class="progress-track"><span style="--progress:${p.progress}%"></span></div></div>
+    <div class="status-cell"><span class="status ${statusClass(p.status)}">${escapeHtml(p.status)}</span></div>
+    <div class="due">${escapeHtml(p.due)}</div>${icon('chevron').replace('class="ico"','class="ico project-chevron"')}
+  </button>`).join(''):'<div class="empty-state">No matching turnover projects. Try another search or filter.</div>';
+}
+function setFilter(filter){activeFilter=filter;document.querySelectorAll('.filter-pill').forEach(el=>el.classList.toggle('active',el.dataset.filter===filter));renderProjects()}
+function searchProjects(value){searchTerm=value;renderProjects(); if(value.trim())document.getElementById('projectsSection').scrollIntoView({behavior:'smooth',block:'start'})}
+function setPreview(mode){
+  const phone=mode==='mobile';
+  document.getElementById('stage').classList.toggle('phone',phone);
+  document.getElementById('previewBg').classList.toggle('mobile-mode',phone);
+  document.getElementById('webPreview').classList.toggle('active',!phone);
+  document.getElementById('mobilePreview').classList.toggle('active',phone);
+  document.getElementById('webPreview').setAttribute('aria-pressed',String(!phone));
+  document.getElementById('mobilePreview').setAttribute('aria-pressed',String(phone));
+  document.getElementById('scrollArea').scrollTop=0;
+}
+function closePopovers(){document.querySelectorAll('.popover').forEach(p=>p.classList.remove('show'));document.getElementById('notificationBtn').setAttribute('aria-expanded','false');document.getElementById('roleBtn').setAttribute('aria-expanded','false')}
+function toggleDashboardPopover(id){const el=document.getElementById(id);const next=!el.classList.contains('show');closePopovers();el.classList.toggle('show',next);document.getElementById(id==='rolePop'?'roleBtn':'notificationBtn').setAttribute('aria-expanded',String(next))}
+function setRole(role){currentRole=role;const roles={Admin:['Admin Demo','Administrator','AD'], 'Property Manager':['Property Manager','Site Operations','PM'],Supervisor:['Project Supervisor','Field Operations','PS'], Vendor:['Vendor Demo','Contractor','VD']};const [name,label,initials]=roles[role];document.getElementById('profileName').textContent=name;document.getElementById('profileRole').textContent=label;document.getElementById('profileAvatar').textContent=initials;document.querySelectorAll('[data-admin="true"]').forEach(el=>{el.style.display=role==='Admin'?'':'none'});document.getElementById('pageTitle').textContent=role==='Vendor'?'Your assigned work':role==='Property Manager'?'Property operations':role==='Supervisor'?'Project supervision':'Dashboard overview';document.getElementById('pageSubtitle').textContent=role==='Vendor'?'Track your assigned milestones, photos and updates.':role==='Property Manager'?'See vacancy status, inspection tasks and unit readiness.':role==='Supervisor'?'Monitor vendor progress, milestones and approvals.':'Stay on top of properties, turnovers and approvals in one place.';closePopovers();showToast(`Previewing ${role} interface — sample data`)}
+function openOverlay(id){closePopovers();document.getElementById(id).classList.add('show')}
+function closeOverlay(id){document.getElementById(id).classList.remove('show')}
+function showToast(message){const el=document.getElementById('toast');el.textContent=message;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3200)}
+function openNewProject(){document.getElementById('newProjectForm').reset();openOverlay('newProjectOverlay');setTimeout(()=>document.getElementById('projectName').focus(),50)}
+function createProject(event){
+  event.preventDefault(); const form=document.getElementById('newProjectForm');if(!form.reportValidity())return;
+  const name=document.getElementById('projectProperty').value;
+  const unit=document.getElementById('projectUnit').value.trim().toUpperCase();
+  if(projects.some(p=>p.name===name&&p.unit===unit&&p.status!=='Ready')){showToast('That unit already has an active demo project.');return}
+  const now=new Date();const due=new Date(now.getTime()+14*86400000).toLocaleDateString('en-US',{month:'short',day:'2-digit'});
+  createdCount++;
+  const id=`TRN-DEMO-${String(createdCount).padStart(3,'0')}`;
+  projects.unshift({id,name,unit,title:document.getElementById('projectName').value.trim(),progress:0,status:'Scheduled',due,budget:0,spent:0,vendor:document.getElementById('projectVendor').value,supervisor:document.getElementById('projectSupervisor').value,variant:'v2'});
+  document.getElementById('activeCount').textContent=18+createdCount;setFilter('All');searchTerm='';document.getElementById('topSearch').value='';closeOverlay('newProjectOverlay');document.getElementById('projectsSection').scrollIntoView({behavior:'smooth',block:'start'});showToast('Demo project launched and added to the list.');
+}
+function openProject(id,tab='Tasks'){
+  const p=projects.find(v=>v.id===id);if(!p)return;selectedProject=p;selectedTab=tab;demoMessages=[];
+  document.getElementById('detailCode').textContent=p.id;
+  document.getElementById('detailTitle').textContent=p.name;
+  document.getElementById('detailSub').textContent=`Unit ${p.unit} · ${p.title ? p.title + " · " : ""}Supervisor: ${p.supervisor}`;
+  document.getElementById('detailStatus').innerHTML=`<span class="status ${statusClass(p.status)}">${escapeHtml(p.status)}</span>`;
+  document.getElementById('detailProgress').textContent=`${p.progress}%`;
+  document.getElementById('detailBudget').textContent=money(p.budget);
+  document.getElementById('detailDue').textContent=p.due;
+  renderDetailTabs();openOverlay('projectOverlay');
+}
+function renderDetailTabs(){document.getElementById('detailTabs').innerHTML=['Tasks','Materials','Chat','Invoices'].map(t=>`<button class="${selectedTab===t?'active':''}" onclick="switchTab('${t}')">${t}</button>`).join('');renderDetailPane()}
+function switchTab(tab){selectedTab=tab;renderDetailTabs()}
+function renderDetailPane(){
+  const p=selectedProject;if(!p)return;
+  let html='';
+  if(selectedTab==='Tasks') html=`<div class="detail-row">${icon('check')}<span>Demolition & removal</span><small>Complete</small></div><div class="detail-row">${icon('camera')}<span>Flooring replacement</span><span class="photo-lock">Photo required</span></div><div class="detail-row">${icon('clock')}<span>Painting & touch-ups</span><small>In progress</small></div><div class="detail-row">${icon('checklist')}<span>Final cleaning</span><small>Upcoming</small></div><button class="btn" style="margin-top:15px" onclick="showToast('Photo checkpoint demo — storage is not connected.')">${icon('camera')} Add milestone photo</button>`;
+  if(selectedTab==='Materials') html=`<div class="detail-row">${icon('layer')}<span>Interior wall paint · 5 gallons</span><small>Required</small></div><div class="detail-row">${icon('layer')}<span>Vinyl flooring · 420 sq ft</span><small>Required</small></div><div class="detail-row">${icon('layer')}<span>Door hardware · 3 sets</span><small>Required</small></div><div class="detail-row">${icon('layer')}<span>Cleaning supplies · 1 kit</span><small>Required</small></div>`;
+  if(selectedTab==='Chat') html=`<div class="mini-chat-bubble"><strong>Jordan Reyes</strong><div>Team, please upload the flooring photos before marking the task complete.</div></div><div class="mini-chat-bubble mine"><strong>Prime Turn Co.</strong><div>Got it! Uploading the latest photos now.</div></div><div id="demoMessages">${demoMessages.map(m=>`<div class="mini-chat-bubble mine">${escapeHtml(m)}</div>`).join('')}</div><form class="chat-compose" onsubmit="sendDemoMessage(event)"><input id="chatInput" aria-label="Write a demo message" required placeholder="Write a message..." /><button type="submit" class="btn primary" aria-label="Send demo message">${icon('send')}</button></form>`;
+  if(selectedTab==='Invoices')html=`<div class="detail-row">${icon('file')}<span>Invoice #INV-2026-408</span><span class="status review">Under Review</span></div><div class="detail-row">${icon('file')}<span>Scope proposal</span><span class="status ready">Approved</span></div><div class="detail-row">${icon('file')}<span>Change order #CO-014</span><small>None</small></div><div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:16px"><button class="btn primary" onclick="document.getElementById('demoInvoiceFile').click()">${icon('upload')} Upload invoice</button><button class="btn" onclick="showToast('Approval workflow is visual only in this prototype.')">Review submissions</button></div><input id="demoInvoiceFile" type="file" accept="application/pdf,image/*" style="display:none" onchange="showToast('File selected for UI demo: '+this.files[0]?.name)" />`;
+  document.getElementById('detailPane').innerHTML=html;
+}
+function sendDemoMessage(event){event.preventDefault();const input=document.getElementById('chatInput');const value=input.value.trim();if(!value)return;demoMessages.push(value);input.value='';renderDetailPane();showToast('Message added to this demo conversation.')}
+const moduleData={
+  Properties:{subtitle:'A snapshot of managed properties and vacant units.',items:[['building','Maple Grove Residences','24 units · 3 turnover projects'],['building','Parkside Heights','42 units · 4 turnover projects'],['building','Westbridge Lofts','30 units · 2 turnover projects']]},
+  Templates:{subtitle:'Standardized checklists and material plans.',items:[['checklist','Standard Full Turnover','9 tasks · photo checkpoints enabled'],['checklist','Painting & Cleaning','5 tasks · 2 photo checkpoints'],['checklist','Flooring Replacement','4 tasks · 2 photo checkpoints']]},
+  Messages:{subtitle:'Dedicated conversations for each turnover project.',items:[['chat','Maple Grove · A-304','Prime Turn Co.: Uploading flooring photos now'],['chat','Westbridge · C-206','Jordan: The electrician will arrive tomorrow'],['chat','Parkside · B-112','Andrea: Please review the latest invoice']]},
+  Invoices:{subtitle:'Proposals, invoices and approval queues.',items:[['file','INV-2026-408 · Northstar Services','Awaiting approval · $1,280'],['file','INV-2026-395 · Prime Turn Co.','Approved · $2,300'],['file','CO-014 · Westbridge Lofts','Change order · Under review']]},
+  Team:{subtitle:'Manage who can access projects and approve work.',items:[['team','Jordan Reyes','Project Supervisor'],['team','Andrea Cruz','Property Manager'],['team','Prime Turn Co.','Primary Vendor']]},
+  Settings:{subtitle:'Workspace settings and user preferences.',items:[['setting','Account preferences','Profile, password and notification options'],['bell','Notification settings','Project events and approval alerts'],['shield','Security & permissions','Role-based access policies']]},
+  Help:{subtitle:'Quick links and user guidance.',items:[['help','Field workflow guide','Milestone photos and offline sync'],['help','Supervisor guide','Approvals, scopes and inspections'],['help','Contact support','Support request workflow preview']]},
+  Activity:{subtitle:'Latest sample events from the portfolio.',items:[['check','Flooring milestone completed','Maple Grove · 15 minutes ago'],['file','Invoice submitted','Parkside · 42 minutes ago'],['chat','Project chat updated','Westbridge · 1 hour ago'],['home','Unit ready for move-in','Harbor Point · 3 hours ago']]},
+  Approvals:{subtitle:'Work that needs a supervisor or manager decision.',items:[['file','Parkside Heights — Invoice','Under review · $1,280'],['camera','Maple Grove — Flooring photos','Pending milestone review'],['checklist','Westbridge — Change order','Waiting on supervisor approval']]}
+};
+function openInfo(name){const data=moduleData[name]||moduleData.Help;document.getElementById('infoTitle').textContent=name==='Team'?'User Management':name;document.getElementById('infoSub').textContent=data.subtitle;document.getElementById('infoContent').innerHTML=data.items.map(item=>`<div class="module-tile">${icon(item[0])}<div><strong>${escapeHtml(item[1])}</strong><small>${escapeHtml(item[2])}</small></div></div>`).join('');openOverlay('infoOverlay')}
+function navigate(name){
+  closePopovers();document.querySelectorAll('[data-nav]').forEach(el=>el.classList.toggle('active',el.dataset.nav===name));
+  if(name==='Dashboard'){document.getElementById('scrollArea').scrollTo({top:0,behavior:'smooth'});return}
+  if(name==='Projects'){setFilter('All');document.getElementById('projectsSection').scrollIntoView({behavior:'smooth',block:'start'});return}
+  if(name==='Analytics'){document.getElementById('performancePanel').scrollIntoView({behavior:'smooth',block:'start'});return}
+  openInfo(name);
+}
+function openMobileSearch(){
+  const query=prompt('Search turnover projects by property, unit, or vendor:');
+  if(query!==null){searchTerm=query;renderProjects();document.getElementById('projectsSection').scrollIntoView({behavior:'smooth',block:'start'})}
+}
+document.addEventListener('keydown',event=>{if(event.key==='Escape'){document.querySelectorAll('.overlay.show').forEach(el=>el.classList.remove('show'));closePopovers()}});
+document.addEventListener('click',event=>{if(!event.target.closest('.popover')&&!event.target.closest('#roleBtn')&&!event.target.closest('#notificationBtn'))closePopovers()});
+const dateLabel=new Intl.DateTimeFormat('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}).format(new Date()).toUpperCase();
+document.getElementById('todayLabel').textContent=dateLabel;
+renderProjects();
+</script>
+</body>
+</html>
